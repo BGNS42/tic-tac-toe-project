@@ -30,48 +30,48 @@ const createJogo = () => {
     const getPtsO = () => gameBoard.ptsY;
 
     const getPlacar = () => `Player X: ${getPtsX()} pts / Player O: ${getPtsO()} pts`;
-    const getCount = () => gameBoard.count;
+    const getRodada = () => gameBoard.count;
 
     const getRandomChoice = () => {
         return Math.floor(Math.random() * 9) + 1;
     };
     
-    const fillX = function(player) {
-        gameBoard.escolhaX.push(player);
+    const fillX = function(escolha) {
+        gameBoard.escolhaX.push(escolha);
     };
     
-    const fillO = function(player) {
-        gameBoard.escolhaO.push(player);
+    const fillO = function(escolha) {
+        gameBoard.escolhaO.push(escolha);
     };
     
-    const fillEscolhidos = (player) => {
-        gameBoard.escolhido.push(player);
+    const fillEscolhidos = (escolha) => {
+        gameBoard.escolhido.push(escolha);
         return gameBoard.escolhido;
     };
 
-    const getEscolhaX = () => {
-        let player = getRandomChoice();
-        if (!gameBoard.escolhido.includes(player)) {
-            fillX(player);
-            fillEscolhidos(player);
-            console.log(`${gameBoard.currentPlayer}: ${player} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaX}\n`);
+    const getEscolhaX = (value) => {
+        let escolha = value;
+        if (!gameBoard.escolhido.includes(escolha)) {
+            fillX(escolha);
+            fillEscolhidos(escolha);
+            console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaX}\n`);
         } else {
-            return false || getEscolhaX();
+            return false || getEscolhaX(value);
         };
     };
 
-    const getEscolhaO = () => {
-        let player = getRandomChoice();
-        if (!gameBoard.escolhido.includes(player)) {
-            fillO(player);
-            fillEscolhidos(player);
-            console.log(`${gameBoard.currentPlayer}: ${player} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaO}\n`);
+    const getEscolhaO = (value) => {
+        let escolha = value;
+        if (!gameBoard.escolhido.includes(escolha)) {
+            fillO(escolha);
+            fillEscolhidos(escolha);
+            console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaO}\n`);
         } else {
-            return false || getEscolhaO();
+            return false || getEscolhaO(value);
         };
     };
 
-    const getEscolha = function() {
+    const getEscolha = function(value) {
         if (gameBoard.currentPlayer === "X") {
             gameBoard.currentPlayer = "O";
         } else {
@@ -80,10 +80,10 @@ const createJogo = () => {
     
         switch (gameBoard.currentPlayer) {
             case "X":
-                getEscolhaX();
+                getEscolhaX(value);
                 break;
             case "O":
-                getEscolhaO();
+                getEscolhaO(value);
                 break;
             default:
                 console.log("Erro, nem X nem O");
@@ -92,30 +92,31 @@ const createJogo = () => {
     };
 
     const winCombos = [
-        [1,2,3],
-        [4,5,6],
-        [7,8,9],
-        [1,4,7],
-        [2,5,8],
-        [3,6,9],
-        [1,5,9],
-        [3,5,7],
+        ["pos1","pos2","pos3"],
+        ["pos4","pos5","pos6"],
+        ["pos7","pos8","pos9"],
+        ["pos1","pos4","pos7"],
+        ["pos2","pos5","pos8"],
+        ["pos3","pos6","pos9"],
+        ["pos1","pos5","pos9"],
+        ["pos3","pos5","pos7"],
     ];
 
 
-    const resetGame = () => {
+    const resetGame = (domObj) => {
         gameBoard.count++;
         gameBoard.escolhido = [];
         gameBoard.escolhaO = [];
         gameBoard.escolhaX = [];
+        domObj.cell.innerText = "";
         if ((getPtsO() === 3) || (getPtsX() === 3)) {
             console.log("\n----------FIM DE JOGO----------\n");
         } else {
             console.log("\n------INICIO DA PROXIMA RODADA-----\n");
-        }
-    }
+        };
+    };
 
-    const checkWin = () => {
+    const checkWin = (domObj) => {
         const playerXHasWon = winCombos.some(combo => {
             return combo.every(cell => gameBoard.escolhaX.includes(cell));
         });
@@ -129,17 +130,17 @@ const createJogo = () => {
             console.log(`\nPlayer X venceu!\n`);
             console.log(getPlacar());
             win = true;
-            resetGame();
+            resetGame(domObj);
         } else if (playerOHasWon) {
             addPtsO();
             console.log(`\nPlayer O venceu!\n`);
             console.log(getPlacar());
             win = true;
-            resetGame();
-        } else if (gameBoard.escolhido.length === 9 && win != true) {
+            resetGame(domObj);
+        } else if (gameBoard.escolhido.length === 9) {
             console.log("\nEmpate\n");
             console.log(getPlacar());
-            resetGame();
+            resetGame(domObj);
         }; 
 
         if (getPtsX() === 3) {
@@ -153,18 +154,55 @@ const createJogo = () => {
         return false;
     };
 
+    const getCurrentPlayer = () => gameBoard.currentPlayer;
 
-    //const getGameBoard = () => gameBoard.escolhido;
-
-    return { getEscolha, checkWin, getCount };
+    return { getEscolha, checkWin, getRodada, getCurrentPlayer };
 };
 
-const jogo = (function() {
-    const ticTacToe = createJogo();
-    let end = false;
-    while (!end) {
-        ticTacToe.getEscolha();
-        end = ticTacToe.checkWin();
+const model = (jogo) => {
+    const domObj = {
+        container: document.querySelector('.container'),
+        board: document.querySelector(".board"),
+        cell: document.querySelectorAll(".cell"),
     };
-    console.log(`Foram ${ticTacToe.getCount()} rodadas\n`);
-})();
+
+    const resetGame = () => {
+        domObj.cell.innerText = "";
+    };
+
+    const eListener = (() => {
+        let venceu = false;
+        domObj.board.addEventListener("click", (event) => {
+            if (event.target.classList.contains('cell')) {
+                const clickedCellId = event.target.id;
+                console.log(`You clicked ${clickedCellId}`);
+                jogo.getEscolha(clickedCellId);
+                if (jogo.getCurrentPlayer() === "X") {
+                    event.target.innerText = "X";
+                } else {
+                    event.target.innerText = "O";
+                }
+                venceu = jogo.checkWin(domObj);
+            //     if (venceu === true) {
+            //         resetGame();
+            //     }
+            // }
+        });
+    })();
+
+    return {};
+};
+
+const ticTacToe = createJogo();
+const dom = model(ticTacToe);
+
+// const jogo = (function() {
+//     const ticTacToe = createJogo();
+//     const dom = model(ticTacToe);
+//     let end = false;
+//     while (!end) {
+//         ticTacToe.getEscolha();
+//         end = ticTacToe.checkWin();
+//     };
+//     console.log(`Foram ${ticTacToe.getRodada()} rodadas\n`);
+// })//();
