@@ -6,90 +6,53 @@
 // em pé: (se ele tem todos os números da esquerda diferentes e da direita iguais, exemplo: [0,0], [1,0], [2,0])
 // basicamente a lógica é: linha [n, n+1, n+2] / coluna [n, n+3, n+6] / diagonal [n, n+4, n+8] ou [n, n+2, n+4]
 
+const createPlayer = (name) => {
+    let _score = 0;
+    const _escolha = [];
+
+    const addEscolha = (escolha) => _escolha.push(escolha);
+    const getEscolhas = () => _escolha;
+    const addScore = () => _score++;
+    const getScore = () => _score;
+    const resetEscolhas = () => {_escolha.splice(0, _escolha.length)};
+
+    return { getEscolhas, addScore, getScore, addEscolha, resetEscolhas };
+};
+
 const createJogo = () => {
+    const pX = createPlayer("X");
+    const pO = createPlayer("O");
+
     const gameBoard = {
-        // board2: [[0,0], [0,1], [0,2],
-        //         [1,0], [1,1], [1,2],
-        //         [2,0], [2,1], [2,2]],
+        //board2: [[x,x,o],
+        //         [x,o,x],
+        //         [x,o,o]],
         board: [1,2,3,
                 4,5,6,
                 7,8,9],
     
-        currentPlayer: "O",
-        escolhido: [],
-        escolhaX: [],
-        escolhaO: [],
-        ptsX: 0,
-        ptsY: 0,
+        currentPlayer: "X",
+        escolhidos: [],
         count: 0,
     };
-    
-    const addPtsX = () => gameBoard.ptsX++;
-    const getPtsX = () => gameBoard.ptsX;
-    const addPtsO = () => gameBoard.ptsY++;
-    const getPtsO = () => gameBoard.ptsY;
 
-    const getPlacar = () => `Player X: ${getPtsX()} pts / Player O: ${getPtsO()} pts`;
+    const getPlacar = () => `Player X: ${pX.getScore()} pts / Player O: ${pO.getScore()} pts`;
     const getRodada = () => gameBoard.count;
 
-    const getRandomChoice = () => {
-        return Math.floor(Math.random() * 9) + 1;
+    const setEscolha = (escolha) => {
+        if (!gameBoard.escolhidos.includes(escolha)) {
+            if (gameBoard.currentPlayer === "X") {
+                pX.addEscolha(escolha);
+                console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${pX.getEscolhas()}\n`);
+            } else {
+                pO.addEscolha(escolha);
+                console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${pO.getEscolhas()}\n`);
+            }
+            gameBoard.escolhidos.push(escolha);
+        }
     };
     
-    const fillX = function(escolha) {
-        gameBoard.escolhaX.push(escolha);
-    };
-    
-    const fillO = function(escolha) {
-        gameBoard.escolhaO.push(escolha);
-    };
-    
-    const fillEscolhidos = (escolha) => {
-        gameBoard.escolhido.push(escolha);
-        return gameBoard.escolhido;
-    };
-
-    const getEscolhaX = (value) => {
-        let escolha = value;
-        if (!gameBoard.escolhido.includes(escolha)) {
-            fillX(escolha);
-            fillEscolhidos(escolha);
-            console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaX}\n`);
-        } else {
-            return false || getEscolhaX(value);
-        };
-    };
-
-    const getEscolhaO = (value) => {
-        let escolha = value;
-        if (!gameBoard.escolhido.includes(escolha)) {
-            fillO(escolha);
-            fillEscolhidos(escolha);
-            console.log(`${gameBoard.currentPlayer}: ${escolha} /\n${gameBoard.currentPlayer} escolhidas: ${gameBoard.escolhaO}\n`);
-        } else {
-            return false || getEscolhaO(value);
-        };
-    };
-
-    const getEscolha = function(value) {
-        if (gameBoard.currentPlayer === "X") {
-            gameBoard.currentPlayer = "O";
-        } else {
-            gameBoard.currentPlayer = "X";
-        };
-    
-        switch (gameBoard.currentPlayer) {
-            case "X":
-                getEscolhaX(value);
-                break;
-            case "O":
-                getEscolhaO(value);
-                break;
-            default:
-                console.log("Erro, nem X nem O");
-                break;
-        };
-    };
+    const changeTurn = () => gameBoard.currentPlayer = gameBoard.currentPlayer === "X" ? "O" : "X";
 
     const winCombos = [
         ["pos1","pos2","pos3"],
@@ -102,61 +65,53 @@ const createJogo = () => {
         ["pos3","pos5","pos7"],
     ];
 
-
-    const resetGame = (domObj) => {
+    const resetGame = () => {
+        gameBoard.currentPlayer = "X";
         gameBoard.count++;
-        gameBoard.escolhido = [];
-        gameBoard.escolhaO = [];
-        gameBoard.escolhaX = [];
-        domObj.cell.innerText = "";
-        if ((getPtsO() === 3) || (getPtsX() === 3)) {
+        gameBoard.escolhidos = [];
+        pX.resetEscolhas();
+        pO.resetEscolhas();
+
+        if ((pX.getScore() === 3) || (pO.getScore() === 3)) {
             console.log("\n----------FIM DE JOGO----------\n");
         } else {
             console.log("\n------INICIO DA PROXIMA RODADA-----\n");
         };
     };
 
-    const checkWin = (domObj) => {
+    const checkWin = () => {
         const playerXHasWon = winCombos.some(combo => {
-            return combo.every(cell => gameBoard.escolhaX.includes(cell));
+            return combo.every(cell => pX.getEscolhas().includes(cell));
         });
         const playerOHasWon = winCombos.some(combo => {
-            return combo.every(cell => gameBoard.escolhaO.includes(cell));
+            return combo.every(cell => pO.getEscolhas().includes(cell));
         });
         
-        let win = false;
         if (playerXHasWon) {
-            addPtsX();
+            pX.addScore();
             console.log(`\nPlayer X venceu!\n`);
+            alert(`${getCurrentPlayer()} venceu o jogo!`);
             console.log(getPlacar());
-            win = true;
-            resetGame(domObj);
+            return true;
         } else if (playerOHasWon) {
-            addPtsO();
+            pO.addScore();
             console.log(`\nPlayer O venceu!\n`);
+            alert(`${getCurrentPlayer()} venceu o jogo!`);
             console.log(getPlacar());
-            win = true;
-            resetGame(domObj);
-        } else if (gameBoard.escolhido.length === 9) {
+            return true;
+        } else if (gameBoard.escolhidos.length === 9) {
             console.log("\nEmpate\n");
+            alert("Empate!")
             console.log(getPlacar());
-            resetGame(domObj);
+            return true;
+        } else {
+            return false;
         }; 
-
-        if (getPtsX() === 3) {
-            console.log("VITORIA! Player X venceu 3!\n");
-            return true;
-        } else if (getPtsO() === 3) {
-            console.log("DERROTA! Player O venceu 3!\n");
-            return true;
-        }         
-        
-        return false;
     };
 
     const getCurrentPlayer = () => gameBoard.currentPlayer;
 
-    return { getEscolha, checkWin, getRodada, getCurrentPlayer };
+    return { setEscolha, checkWin, changeTurn, getRodada, getCurrentPlayer, resetGame };
 };
 
 const model = (jogo) => {
@@ -167,26 +122,34 @@ const model = (jogo) => {
     };
 
     const resetGame = () => {
-        domObj.cell.innerText = "";
+        domObj.cell.forEach(e => {
+            e.textContent = "";
+        });
+        jogo.resetGame();
     };
 
     const eListener = (() => {
-        let venceu = false;
         domObj.board.addEventListener("click", (event) => {
             if (event.target.classList.contains('cell')) {
+
                 const clickedCellId = event.target.id;
                 console.log(`You clicked ${clickedCellId}`);
-                jogo.getEscolha(clickedCellId);
+
+                jogo.setEscolha(clickedCellId);
+
                 if (jogo.getCurrentPlayer() === "X") {
                     event.target.innerText = "X";
                 } else {
                     event.target.innerText = "O";
+                };
+                
+                const venceu = jogo.checkWin();
+                if (venceu === true) {
+                    resetGame();
+                } else {
+                    jogo.changeTurn();
                 }
-                venceu = jogo.checkWin(domObj);
-            //     if (venceu === true) {
-            //         resetGame();
-            //     }
-            }
+            };
         });
     })();
 
@@ -195,14 +158,3 @@ const model = (jogo) => {
 
 const ticTacToe = createJogo();
 const dom = model(ticTacToe);
-
-// const jogo = (function() {
-//     const ticTacToe = createJogo();
-//     const dom = model(ticTacToe);
-//     let end = false;
-//     while (!end) {
-//         ticTacToe.getEscolha();
-//         end = ticTacToe.checkWin();
-//     };
-//     console.log(`Foram ${ticTacToe.getRodada()} rodadas\n`);
-// })//();
