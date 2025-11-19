@@ -21,8 +21,8 @@ const createPlayer = () => {
 };
 
 const createJogo = () => {
-    const pX = createPlayer("X");
-    const pO = createPlayer("O");
+    const pX = createPlayer();
+    const pO = createPlayer();
 
     const gameBoard = {
         //board2: [[x,x,o],
@@ -82,6 +82,7 @@ const createJogo = () => {
 
         if ((pX.getScore() === 3) || (pO.getScore() === 3)) {
             console.log("\n----------FIM DE JOGO----------\n");
+            gameBoard.count = 1;
         } else {
             console.log("\n------INICIO DA PROXIMA RODADA-----\n");
         };
