@@ -186,7 +186,7 @@ const model = (jogo) => {
             //     if (venceu === true) {
             //         resetGame();
             //     }
-            // }
+            }
         });
     })();
 
