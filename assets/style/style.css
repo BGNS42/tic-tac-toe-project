@@ -53,8 +53,29 @@ h1, h2, h3, h4, h5, h6 {
   isolation: isolate;
 }
 
+h1 {
+  font-size: 3rem;
+}
 .container {
     border: 2px solid green;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    padding: 4rem;
+}
+
+.score {
+  display: flex;
+  justify-content: space-around;
+  gap: 3em;
+  margin-bottom: 1rem;
+}
+
+.turn {
+  margin-bottom: 1rem;
 }
 
 .board {
@@ -79,10 +100,11 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
 }
 
-.cell.x::before {
+/* .cell.x::before {
     content: 'X';
 }
 
 .cell.o::before {
     content: 'O';
-}
+} */
+

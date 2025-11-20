@@ -116,7 +116,8 @@ const model = (jogo) => {
     const dom = {
         board: document.querySelector(".board"),
         cell: document.querySelectorAll(".cell"),
-
+        scoreX: document.querySelector(".playerX"),
+        scoreO: document.querySelector(".playerO"),
     };
 
     const swanFill = () => {
@@ -135,19 +136,24 @@ const model = (jogo) => {
         if (result === "continue") return;
 
         swanFill();
-
+        
         const { X, O } = jogo.getScore();
+        
+        dom.scoreX.textContent = `Player X: ${X} pts`;
+        dom.scoreO.textContent = `Player O: ${O} pts`;          
 
         if (X === 3 || O === 3) {
             const winner = X > O ? "X" : "O";
-            alert(`Fim de jogo! PLayer ${winner} venceu a partida!`);
+            alert(`Fim de jogo! Player ${winner} venceu a partida!`);
 
             jogo.resetMatch();
             swanFill();
+            dom.scoreX.textContent = `Player X: ${0} pts`;
+            dom.scoreO.textContent = `Player O: ${0} pts`;
             return;
         }
 
-        jogo.resetRodada();
+        jogo.resetRodada();      
     };
 
     dom.board.addEventListener("click", (event) => {
