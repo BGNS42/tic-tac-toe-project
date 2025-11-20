@@ -8,13 +8,13 @@
 
 const createPlayer = () => {
     let score = 0;
-    const _escolha = [];
+    const escolhas = [];
 
-    const addEscolha = (escolha) => _escolha.push(escolha);
-    const getEscolhas = () => _escolha;
+    const addEscolha = (escolha) => escolhas.push(escolha);
+    const getEscolhas = () => escolhas;
     const addScore = () => score++;
     const getScore = () => score;
-    const resetEscolhas = () => {_escolha.splice(0, _escolha.length)};
+    const resetEscolhas = () => {escolhas.splice(0, escolhas.length)};
     const resetScore = () => score = 0;
 
     return { getEscolhas, addEscolha, resetEscolhas, addScore, getScore, resetScore };
@@ -35,25 +35,20 @@ const createJogo = () => {
     const pX = createPlayer();
     const pO = createPlayer();
 
-    const gameBoard = {
-        // board: [1,2,3,
-        //         4,5,6,
-        //         7,8,9],
-    
+    const gameBoard = {    
         currentPlayer: "X",
         escolhidos: [],
-        count: 1,
+        rodada: 1,
     };
 
-    const getPlacar = () => `Player X: ${pX.getScore()} pts / Player O: ${pO.getScore()} pts`;
-    const getRodada = () => gameBoard.count;
-    const getEscolhasJogo = () => gameBoard.escolhidos;
     const getCurrentPlayer = () => gameBoard.currentPlayer;    
-    const changeTurn = () => gameBoard.currentPlayer = gameBoard.currentPlayer === "X" ? "O" : "X";
     const getPlayer = () => getCurrentPlayer() === "X" ? pX : pO;
+    const changeTurn = () => {
+        gameBoard.currentPlayer = gameBoard.currentPlayer === "X" ? "O" : "X";
+    };
 
     const setEscolha = (escolha, event) => {
-        if (getEscolhasJogo().includes(escolha)) {
+        if (gameBoard.escolhidos.includes(escolha)) {
             alert("Posição já foi escolhida");
             return false;
         };
@@ -66,105 +61,106 @@ const createJogo = () => {
         return true;
     };
 
-    const resetGame = (fn, venceu = false) => {
-        gameBoard.currentPlayer = "X";
-        gameBoard.count++;
-        gameBoard.escolhidos = [];
-        pX.resetEscolhas();
-        pO.resetEscolhas();
-
-        if (pX.getScore() === 3 || pO.getScore() === 3) {
-
-            console.log("\n----------FIM DE JOGO----------\n");
-            gameBoard.count = 1;
-            let alertMsg = "";
-
-            if (pX.getScore() > pO.getScore()) {
-                alertMsg = `Player X venceu a partida!`;
-            } else {
-                alertMsg = `Player O venceu a partida!`;
-            }
-
-            alert(`Fim de jogo! ${alertMsg}`);
-            fn();
-            resetScores();
-            return;
-
-        } else if (venceu === true) {
-            fn();
-        } else {
-            console.log("\n------INICIO DA PROXIMA RODADA-----\n");
-        };
-    };
-
+    const getPlacar = () => `Player X: ${pX.getScore()} pts / Player O: ${pO.getScore()} pts`;
+    const getRodada = () => gameBoard.rodada;
+    // const getEscolhasJogo = () => gameBoard.escolhidos;
+    
     const checkWin = () => {
-        const player = getPlayer();
-        const escolhas = player.getEscolhas();
+        const escolhas = getPlayer().getEscolhas();
 
-        const playerHasWon = winCombos.some(combo => {
+        const won = winCombos.some(combo => {
             return combo.every(cell => escolhas.includes(cell));
         });
         
-        if (playerHasWon) {
-            player.addScore();
+        if (won) {
+            getPlayer().addScore();
+            alert(`${getCurrentPlayer()} venceu a rodada ${getRodada()}!\n${getPlacar()}`);
             console.log(`\nPlayer ${getCurrentPlayer()} venceu!\n`);
-            alert(`${getCurrentPlayer()} venceu a rodada ${getRodada()}!`);
             console.log(getPlacar());
-            return true;
+            return "win"
         } else if (gameBoard.escolhidos.length === 9) {
-            console.log("\nEmpate\n");
             alert("Empate!")
+            console.log("\nEmpate\n");
             console.log(getPlacar());
-            return true;
+            return "draw"
         } else {
             changeTurn();
-            return false;
+            return "continue"
         }; 
     };
-
-    const resetScores = () => {
+    const resetRodada = () => {
+        gameBoard.currentPlayer = "X";
+        gameBoard.rodada++;
+        gameBoard.escolhidos = [];
+        pX.resetEscolhas();
+        pO.resetEscolhas();
+    }
+    
+    const resetMatch = () => {
         pX.resetScore();
         pO.resetScore();
+        gameBoard.rodada = 1;
+        resetRodada();
     };
 
-    return { setEscolha, getEscolhasJogo, checkWin, resetGame };
+    const getScore = () => ({
+        X: pX.getScore(),
+        O: pO.getScore(),
+        rodada: gameBoard.rodada,
+    });
+
+    return { setEscolha, checkWin, resetRodada, resetMatch, getScore, getCurrentPlayer };
 };
 
 const model = (jogo) => {
-    const domObj = {
-        container: document.querySelector('.container'),
+    const dom = {
         board: document.querySelector(".board"),
         cell: document.querySelectorAll(".cell"),
 
     };
-    // const fill = (() => {
-    //     domObj.cell.forEach(e => {
-    //         e.textContent = "BGNS";
-    //     });
-    // })();
-
-    const resetDom = () => {
-        domObj.cell.forEach(e => {
-            e.textContent = "";
+    
+    const swanFill = () => {
+        dom.cell.forEach(e => {
+            e.textContent = "🦢";
         });
     };
 
-    const eListener = (() => {
-        domObj.board.addEventListener("click", (event) => {
-            if (event.target.classList.contains('cell')) {
-
-                const escolha = event.target.id;
-
-                const jogadaValida = jogo.setEscolha(escolha, event);
-                if (!jogadaValida) return;
-                
-                const venceu = jogo.checkWin();
-                if (venceu) jogo.resetGame(resetDom, venceu);
-            };
+    const clearBoard = (() => {
+        dom.cell.forEach(e => {
+            e.textContent = "🦢";
         });
     })();
 
-    return {};
+    const handleResult = (result) => {
+        if (result === "continue") return;
+
+        swanFill();
+
+        const { X, O } = jogo.getScore();
+
+        if (X === 3 || O === 3) {
+            const winner = X > O ? "X" : "O";
+            alert(`Fim de jogo! PLayer ${winner} venceu a partida!`);
+
+            jogo.resetMatch();
+            swanFill();
+            return;
+        }
+
+        jogo.resetRodada();
+    };
+
+    dom.board.addEventListener("click", (event) => {
+        if (!event.target.classList.contains('cell')) return;
+
+        const escolha = event.target.id;
+
+        const jogadaValida = jogo.setEscolha(escolha, event);
+        if (!jogadaValida) return;
+            
+        const venceu = jogo.checkWin();
+        handleResult(venceu);
+    });
 };
 
 const ticTacToe = createJogo();
