@@ -36,9 +36,9 @@ const createJogo = () => {
     const pO = createPlayer();
 
     const gameBoard = {
-        board: [1,2,3,
-                4,5,6,
-                7,8,9],
+        // board: [1,2,3,
+        //         4,5,6,
+        //         7,8,9],
     
         currentPlayer: "X",
         escolhidos: [],
@@ -50,11 +50,7 @@ const createJogo = () => {
     const getEscolhasJogo = () => gameBoard.escolhidos;
     const getCurrentPlayer = () => gameBoard.currentPlayer;    
     const changeTurn = () => gameBoard.currentPlayer = gameBoard.currentPlayer === "X" ? "O" : "X";
-    const getPlayer = () => {
-        if (getCurrentPlayer() === "X") return pX;
-        else return pO;
-    };
-    const player = getPlayer();
+    const getPlayer = () => getCurrentPlayer() === "X" ? pX : pO;
 
     const setEscolha = (escolha, event) => {
         if (getEscolhasJogo().includes(escolha)) {
@@ -62,11 +58,7 @@ const createJogo = () => {
             return false;
         };
 
-        if (getCurrentPlayer() === "X") {
-            pX.addEscolha(escolha);
-        } else {
-            pO.addEscolha(escolha);
-        }
+        getPlayer().addEscolha(escolha);
 
         gameBoard.escolhidos.push(escolha);
         
@@ -81,65 +73,32 @@ const createJogo = () => {
         pX.resetEscolhas();
         pO.resetEscolhas();
 
-        if (getScore() === 3) {
+        if (pX.getScore() === 3 || pO.getScore() === 3) {
 
             console.log("\n----------FIM DE JOGO----------\n");
             gameBoard.count = 1;
             let alertMsg = "";
 
-            if (getScore("X") > getScore("O")) {
+            if (pX.getScore() > pO.getScore()) {
                 alertMsg = `Player X venceu a partida!`;
             } else {
                 alertMsg = `Player O venceu a partida!`;
             }
 
             alert(`Fim de jogo! ${alertMsg}`);
-            fn;
+            fn();
             resetScores();
             return;
 
         } else if (venceu === true) {
-            fn;
+            fn();
         } else {
             console.log("\n------INICIO DA PROXIMA RODADA-----\n");
         };
     };
 
-    // const checkWin = () => {
-    //     const xEscolhas = pX.getEscolhas();
-    //     const oEscolhas = pO.getEscolhas();
-
-    //     const playerXHasWon = winCombos.some(combo => {
-    //         return combo.every(cell => xEscolhas.includes(cell));
-    //     });
-    //     const playerOHasWon = winCombos.some(combo => {
-    //         return combo.every(cell => oEscolhas.includes(cell));
-    //     });
-        
-    //     if (playerXHasWon) {
-    //         pX.addScore();
-    //         console.log(`\nPlayer X venceu!\n`);
-    //         alert(`${getCurrentPlayer()} venceu a rodada ${getRodada()}!`);
-    //         console.log(getPlacar());
-    //         return true;
-    //     } else if (playerOHasWon) {
-    //         pO.addScore();
-    //         console.log(`\nPlayer O venceu!\n`);
-    //         alert(`${getCurrentPlayer()} venceu a rodada ${getRodada()}!`);
-    //         console.log(getPlacar());
-    //         return true;
-    //     } else if (gameBoard.escolhidos.length === 9) {
-    //         console.log("\nEmpate\n");
-    //         alert("Empate!")
-    //         console.log(getPlacar());
-    //         return true;
-    //     } else {
-    //         changeTurn();
-    //         return false;
-    //     }; 
-    // };
     const checkWin = () => {
-        //const player = getPlayer();
+        const player = getPlayer();
         const escolhas = player.getEscolhas();
 
         const playerHasWon = winCombos.some(combo => {
@@ -161,14 +120,6 @@ const createJogo = () => {
             changeTurn();
             return false;
         }; 
-    };
-
-    const getScore = (player = getCurrentPlayer()) => {
-        if (player === "X") {
-            return pX.getScore();
-        } else {
-            return pO.getScore();
-        }
     };
 
     const resetScores = () => {
@@ -208,7 +159,7 @@ const model = (jogo) => {
                 if (!jogadaValida) return;
                 
                 const venceu = jogo.checkWin();
-                if (venceu) jogo.resetGame(resetDom(), venceu);
+                if (venceu) jogo.resetGame(resetDom, venceu);
             };
         });
     })();
