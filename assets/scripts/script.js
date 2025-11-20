@@ -99,7 +99,7 @@ const createJogo = () => {
     const resetMatch = () => {
         pX.resetScore();
         pO.resetScore();
-        gameBoard.rodada = 1;
+        gameBoard.rodada = 0;
         resetRodada();
     };
 
@@ -118,7 +118,7 @@ const model = (jogo) => {
         cell: document.querySelectorAll(".cell"),
 
     };
-    
+
     const swanFill = () => {
         dom.cell.forEach(e => {
             e.textContent = "🦢";
