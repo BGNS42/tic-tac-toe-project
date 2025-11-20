@@ -53,11 +53,14 @@ h1, h2, h3, h4, h5, h6 {
   isolation: isolate;
 }
 
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 h1 {
   font-size: 3rem;
 }
 .container {
-    border: 2px solid green;
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -84,7 +87,6 @@ h1 {
     grid-template-columns: repeat(3, 100px);
     grid-template-rows: repeat(3, 100px);
     gap: 0px;
-    /* border: 2px solid black; */
     width: fit-content;
     margin: 0 auto;
 }
@@ -99,12 +101,3 @@ h1 {
     font-size: 2em;
     cursor: pointer;
 }
-
-/* .cell.x::before {
-    content: 'X';
-}
-
-.cell.o::before {
-    content: 'O';
-} */
-

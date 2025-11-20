@@ -1,11 +1,8 @@
-// se um jogador escolhe uma posição, preciso armazenar em variável de ESCOLHIDOS e na variável correspondente a pontuação do player da rodada. 
-// ao escolher uma posição, verifica se a posição já foi escolhida. Se não foi, ela vai para ESCOLHIDOS e para pontuação do player da rodada.
-// Ao final de rodada há uma verificação pra saber se o player da rodada pontuou com:
-// uma linha: (se ele tem 3 arrays com primeiro elemento iguais, ex: [0,1], [0,2], [0,0])
-// uma diagonal: (se ele tem arrays com todos os números iguais( [0,0], [1,1] ou [2,2]) ou a pontuação [2,0], [1,1] e [0,2]) 
-// em pé: (se ele tem todos os números da esquerda diferentes e da direita iguais, exemplo: [0,0], [1,0], [2,0])
 // basicamente a lógica é: linha [n, n+1, n+2] / coluna [n, n+3, n+6] / diagonal [n, n+4, n+8] ou [n, n+2, n+4]
 
+// =================
+// Factory do Player
+// =================
 const createPlayer = () => {
     let score = 0;
     const escolhas = [];
@@ -19,7 +16,9 @@ const createPlayer = () => {
 
     return { getEscolhas, addEscolha, resetEscolhas, addScore, getScore, resetScore };
 };
-
+// =================
+// Factory do Jogo
+// =================
 const createJogo = () => {
     const winCombos = [
         ["pos1","pos2","pos3"],
@@ -41,8 +40,8 @@ const createJogo = () => {
         rodada: 1,
     };
 
-    const getCurrentPlayer = () => gameBoard.currentPlayer;    
-    const getPlayer = () => getCurrentPlayer() === "X" ? pX : pO;
+    const getCurrentPlayer = () => gameBoard.currentPlayer; // esse devolve se "X" ou se "O"    
+    const getPlayer = () => getCurrentPlayer() === "X" ? pX : pO; // esse devolve o objeto pX ou pO
     const changeTurn = () => {
         gameBoard.currentPlayer = gameBoard.currentPlayer === "X" ? "O" : "X";
     };
@@ -111,13 +110,16 @@ const createJogo = () => {
 
     return { setEscolha, checkWin, resetRodada, resetMatch, getScore, getCurrentPlayer };
 };
-
+// =================
+// Factory do DOM
+// =================
 const model = (jogo) => {
     const dom = {
         board: document.querySelector(".board"),
         cell: document.querySelectorAll(".cell"),
         scoreX: document.querySelector(".playerX"),
         scoreO: document.querySelector(".playerO"),
+        turn: document.querySelector(".turn"),
     };
 
     const swanFill = () => {
@@ -132,6 +134,11 @@ const model = (jogo) => {
         });
     })();
 
+    const fillScore = (X, O) => {
+        dom.scoreX.textContent = `Player X: ${X} pts`;
+        dom.scoreO.textContent = `Player O: ${O} pts`;
+    };
+
     const handleResult = (result) => {
         if (result === "continue") return;
 
@@ -139,8 +146,7 @@ const model = (jogo) => {
         
         const { X, O } = jogo.getScore();
         
-        dom.scoreX.textContent = `Player X: ${X} pts`;
-        dom.scoreO.textContent = `Player O: ${O} pts`;          
+        fillScore(X, O);   
 
         if (X === 3 || O === 3) {
             const winner = X > O ? "X" : "O";
@@ -148,12 +154,13 @@ const model = (jogo) => {
 
             jogo.resetMatch();
             swanFill();
-            dom.scoreX.textContent = `Player X: ${0} pts`;
-            dom.scoreO.textContent = `Player O: ${0} pts`;
+            fillScore(0, 0);
+            dom.turn.textContent = `Player X goes first.`;
             return;
         }
 
-        jogo.resetRodada();      
+        jogo.resetRodada();
+        dom.turn.textContent = `Player X goes first.`;      
     };
 
     dom.board.addEventListener("click", (event) => {
@@ -163,11 +170,13 @@ const model = (jogo) => {
 
         const jogadaValida = jogo.setEscolha(escolha, event);
         if (!jogadaValida) return;
-            
+        dom.turn.textContent = `Player ${jogo.getCurrentPlayer() === "X"? "O" : "X"} turn`;    
         const venceu = jogo.checkWin();
         handleResult(venceu);
     });
 };
-
+// ==================================================
+// Cria o jogo e altera o DOM com base no jogo criado
+// ==================================================
 const ticTacToe = createJogo();
 const dom = model(ticTacToe);
